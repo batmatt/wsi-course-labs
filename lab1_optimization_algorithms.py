@@ -25,17 +25,13 @@ class Result:
         self.algorithm = algorithm
         self.outcome_type = outcome_type
 
-    def present_outcome(self):
+    def __str__(self):
         if self.outcome_type == OutcomeType.FOUND_MINIMUM:
-            print(f"{self.algorithm} found minimum after {self.iterations} iterations")
+            return f"{self.algorithm} found minimum after {self.iterations} iterations"
         if self.outcome_type == OutcomeType.EPSILON_LIMIT:
-            print(
-                f"{self.algorithm} found solution's square lower than epsilon after {self.iterations} iterations"
-            )
+            return f"{self.algorithm} found solution's square lower than epsilon after {self.iterations} iterations"
         if self.outcome_type == OutcomeType.ITERATIONS_LIMIT:
-            print(
-                f"{self.algorithm} couldn't find solution in {self.iterations} iterations"
-            )
+            return f"{self.algorithm} couldn't find solution in {self.iterations} iterations"
 
 
 def rosenbrock_function(x: float, y: float):
@@ -69,34 +65,52 @@ def newton_update_x_and_y(x: float, y: float, beta: float):
     return (new_x, new_y)
 
 
-def gradient_descent(x: float, y: float, beta: float, epsilon: float, epochs: int):
-    (previous_x, previous_y) = (x, y)
+def gradient_descent(
+    init_x: float, init_y: float, beta: float, epsilon: float, epochs: int
+):
+    (x, y) = (init_x, init_y)
+    (previous_x, previous_y) = (init_x, init_y)
 
     for e in range(epochs):
         (x, y) = gradient_update_x_and_y(previous_x, previous_y, beta)
         print(f"epoch: {e}, (x, y): {(x,y)}")
         if rosenbrock_function(x, y) == 0:
-            return (e + 1, OutcomeType.FOUND_MINIMUM)
+            return Result(
+                init_x, init_y, e + 1, "Gradient descent", OutcomeType.FOUND_MINIMUM
+            )
         if rosenbrock_function(x, y) ** 2 < epsilon:
-            return (e + 1, OutcomeType.EPSILON_LIMIT)
+            return Result(
+                init_x, init_y, e + 1, "Gradient descent", OutcomeType.EPSILON_LIMIT
+            )
         if e == epochs - 1:
-            return (e + 1, OutcomeType.ITERATIONS_LIMIT)
+            return Result(
+                init_x, init_y, e + 1, "Gradient descent", OutcomeType.ITERATIONS_LIMIT
+            )
 
         (previous_x, previous_y) = (x, y)
 
 
-def newton_method(x: float, y: float, beta: float, epsilon: float, epochs: int):
-    (previous_x, previous_y) = (x, y)
+def newton_method(
+    init_x: float, init_y: float, beta: float, epsilon: float, epochs: int
+):
+    (x, y) = (init_x, init_y)
+    (previous_x, previous_y) = (init_x, init_y)
 
     for e in range(epochs):
         (x, y) = newton_update_x_and_y(previous_x, previous_y, beta)
         print(f"epoch: {e}, (x, y): {(x,y)}")
         if rosenbrock_function(x, y) == 0:
-            return (e + 1, OutcomeType.FOUND_MINIMUM)
+            return Result(
+                init_x, init_y, e + 1, "Gradient descent", OutcomeType.FOUND_MINIMUM
+            )
         if rosenbrock_function(x, y) ** 2 < epsilon:
-            return (e + 1, OutcomeType.EPSILON_LIMIT)
+            return Result(
+                init_x, init_y, e + 1, "Gradient descent", OutcomeType.EPSILON_LIMIT
+            )
         if e == epochs - 1:
-            return (e + 1, OutcomeType.ITERATIONS_LIMIT)
+            return Result(
+                init_x, init_y, e + 1, "Gradient descent", OutcomeType.ITERATIONS_LIMIT
+            )
 
         (previous_x, previous_y) = (x, y)
 
@@ -133,13 +147,11 @@ def main():
     algorithm = args.algorithm
 
     if args.algorithm == "gd":
-        outcome = gradient_descent(init_x, init_y, beta, epsilon, iterations)
-        result = Result(init_x, init_y, outcome[0], "Gradient descent", outcome[1])
+        result = gradient_descent(init_x, init_y, beta, epsilon, iterations)
     if args.algorithm == "nm":
-        outcome = newton_method(init_x, init_y, beta, epsilon, iterations)
-        result = Result(init_x, init_y, outcome[0], "Newton's method", outcome[1])
+        result = newton_method(init_x, init_y, beta, epsilon, iterations)
 
-    result.present_outcome()
+    print(result)
 
 
 if __name__ == "__main__":
