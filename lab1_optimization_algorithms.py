@@ -1,7 +1,9 @@
 import argparse
-import numpy as np
-import matplotlib.pyplot as plt
 from enum import Enum
+from timeit import timeit
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 class OutcomeType(Enum):
@@ -13,14 +15,14 @@ class OutcomeType(Enum):
 class Result:
     def __init__(
         self,
-        initial_x: float,
-        initial_y: float,
+        x: float,
+        y: float,
         iterations: int,
         algorithm: str,
         outcome_type: OutcomeType,
     ):
-        self.initial_x = initial_x
-        self.initial_y = initial_y
+        self.x = x
+        self.y = y
         self.iterations = iterations
         self.algorithm = algorithm
         self.outcome_type = outcome_type
@@ -29,9 +31,9 @@ class Result:
         if self.outcome_type == OutcomeType.FOUND_MINIMUM:
             return f"{self.algorithm} found minimum after {self.iterations} iterations"
         if self.outcome_type == OutcomeType.EPSILON_LIMIT:
-            return f"{self.algorithm} found solution's square lower than epsilon after {self.iterations} iterations"
+            return f"{self.algorithm} found solution with MSE lower than epsilon at point (x,y) = {(self.x, self.y)} after {self.iterations} iterations"
         if self.outcome_type == OutcomeType.ITERATIONS_LIMIT:
-            return f"{self.algorithm} couldn't find solution in {self.iterations} iterations"
+            return f"{self.algorithm} couldn't find solution in {self.iterations} iterations. Algorithm ended at (x, y) = {(self.x, self.y)} "
 
 
 def rosenbrock_function(x: float, y: float):
@@ -39,7 +41,7 @@ def rosenbrock_function(x: float, y: float):
 
 
 def rosenbrock_gradient(x: float, y: float):
-    return np.array([400 * x ** 3 + 2 * x - 400 * x * y - 2, 200 * y - 200 * x ** 2])
+    return np.array([400 * x ** 3 - 400 * x * y + 2 * x - 2, 200 * y - 200 * x ** 2])
 
 
 def rosenbrock_hess(x: float, y: float):
@@ -66,51 +68,51 @@ def newton_update_x_and_y(x: float, y: float, beta: float):
 
 
 def gradient_descent(
-    init_x: float, init_y: float, beta: float, epsilon: float, epochs: int
-):
-    (x, y) = (init_x, init_y)
+    init_x: float,
+    init_y: float,
+    beta: float,
+    epsilon: float,
+    epochs: int,
+) -> Result:
     (previous_x, previous_y) = (init_x, init_y)
 
     for e in range(epochs):
         (x, y) = gradient_update_x_and_y(previous_x, previous_y, beta)
-        print(f"epoch: {e}, (x, y): {(x,y)}")
+
+        # uncomment line below to see next points, and MSE of solution for them
+        # print(f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}")
+
         if rosenbrock_function(x, y) == 0:
-            return Result(
-                init_x, init_y, e + 1, "Gradient descent", OutcomeType.FOUND_MINIMUM
-            )
+            return Result(x, y, e + 1, "Gradient descent", OutcomeType.FOUND_MINIMUM)
         if rosenbrock_function(x, y) ** 2 < epsilon:
-            return Result(
-                init_x, init_y, e + 1, "Gradient descent", OutcomeType.EPSILON_LIMIT
-            )
+            return Result(x, y, e + 1, "Gradient descent", OutcomeType.EPSILON_LIMIT)
         if e == epochs - 1:
-            return Result(
-                init_x, init_y, e + 1, "Gradient descent", OutcomeType.ITERATIONS_LIMIT
-            )
+            return Result(x, y, e + 1, "Gradient descent", OutcomeType.ITERATIONS_LIMIT)
 
         (previous_x, previous_y) = (x, y)
 
 
 def newton_method(
-    init_x: float, init_y: float, beta: float, epsilon: float, epochs: int
-):
-    (x, y) = (init_x, init_y)
+    init_x: float,
+    init_y: float,
+    beta: float,
+    epsilon: float,
+    epochs: int,
+) -> Result:
     (previous_x, previous_y) = (init_x, init_y)
 
     for e in range(epochs):
         (x, y) = newton_update_x_and_y(previous_x, previous_y, beta)
-        print(f"epoch: {e}, (x, y): {(x,y)}")
+
+        # uncomment line below to see next points, and MSE of solution for them
+        # print(f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}")
+
         if rosenbrock_function(x, y) == 0:
-            return Result(
-                init_x, init_y, e + 1, "Gradient descent", OutcomeType.FOUND_MINIMUM
-            )
-        if rosenbrock_function(x, y) ** 2 < epsilon:
-            return Result(
-                init_x, init_y, e + 1, "Gradient descent", OutcomeType.EPSILON_LIMIT
-            )
+            return Result(x, y, e + 1, "Newton's method", OutcomeType.FOUND_MINIMUM)
+        if (rosenbrock_function(x, y)) ** 2 < epsilon:
+            return Result(x, y, e + 1, "Newton's method", OutcomeType.EPSILON_LIMIT)
         if e == epochs - 1:
-            return Result(
-                init_x, init_y, e + 1, "Gradient descent", OutcomeType.ITERATIONS_LIMIT
-            )
+            return Result(x, y, e + 1, "Newton's method", OutcomeType.ITERATIONS_LIMIT)
 
         (previous_x, previous_y) = (x, y)
 
@@ -146,12 +148,30 @@ def main():
     iterations = args.iterations
     algorithm = args.algorithm
 
-    if args.algorithm == "gd":
+    if algorithm == "gd":
         result = gradient_descent(init_x, init_y, beta, epsilon, iterations)
-    if args.algorithm == "nm":
+        t = timeit(
+            "gradient_descent(init_x, init_y, beta, epsilon, iterations)",
+            "from __main__ import gradient_descent;"
+            f"init_x = {init_x}; init_y = {init_y}; beta = {beta};"
+            f"epsilon = {epsilon}; iterations = {iterations}",
+            number=10,
+        )
+    elif algorithm == "nm":
         result = newton_method(init_x, init_y, beta, epsilon, iterations)
+        t = timeit(
+            "newton_method(init_x, init_y, beta, epsilon, iterations)",
+            "from __main__ import newton_method;"
+            f"init_x = {init_x}; init_y = {init_y}; beta = {beta};"
+            f"epsilon = {epsilon}; iterations = {iterations}",
+            number=10,
+        )
+    else:
+        print("Wrong algorithm")
+        exit(1)
 
     print(result)
+    print(f"Mean time of calculations for 10 runs: {t} seconds")
 
 
 if __name__ == "__main__":
