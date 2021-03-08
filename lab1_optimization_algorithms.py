@@ -1,6 +1,7 @@
 import argparse
 from enum import Enum
 from timeit import timeit
+from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,12 +21,16 @@ class Result:
         iterations: int,
         algorithm: str,
         outcome_type: OutcomeType,
+        x_values: List[float] = None,
+        y_values: List[float] = None,
     ):
         self.x = x
         self.y = y
         self.iterations = iterations
         self.algorithm = algorithm
         self.outcome_type = outcome_type
+        self.x_values = x_values
+        self.y_values = y_values
 
     def __str__(self):
         if self.outcome_type == OutcomeType.FOUND_MINIMUM:
@@ -78,21 +83,51 @@ def gradient_descent(
     beta: float,
     epsilon: float,
     epochs: int,
+    plot: bool = False,
 ) -> Result:
     (previous_x, previous_y) = (init_x, init_y)
+    x_values = [init_x]
+    y_values = [init_y]
 
     for e in range(epochs):
         (x, y) = gradient_update_x_and_y(previous_x, previous_y, beta)
+        if plot == True:
+            x_values.append(x)
+            y_values.append(y)
 
         # uncomment line below to see next points, and MSE of solution for them
         # print(f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}")
 
         if rosenbrock_function(x, y) == 0:
-            return Result(x, y, e + 1, "Gradient descent", OutcomeType.FOUND_MINIMUM)
+            return Result(
+                x,
+                y,
+                e + 1,
+                "Gradient descent",
+                OutcomeType.FOUND_MINIMUM,
+                x_values,
+                y_values,
+            )
         if rosenbrock_function(x, y) ** 2 < epsilon:
-            return Result(x, y, e + 1, "Gradient descent", OutcomeType.EPSILON_LIMIT)
+            return Result(
+                x,
+                y,
+                e + 1,
+                "Gradient descent",
+                OutcomeType.EPSILON_LIMIT,
+                x_values,
+                y_values,
+            )
         if e == epochs - 1:
-            return Result(x, y, e + 1, "Gradient descent", OutcomeType.ITERATIONS_LIMIT)
+            return Result(
+                x,
+                y,
+                e + 1,
+                "Gradient descent",
+                OutcomeType.ITERATIONS_LIMIT,
+                x_values,
+                y_values,
+            )
 
         (previous_x, previous_y) = (x, y)
 
@@ -103,21 +138,51 @@ def newton_method(
     beta: float,
     epsilon: float,
     epochs: int,
+    plot: bool = False,
 ) -> Result:
     (previous_x, previous_y) = (init_x, init_y)
+    x_values = [init_x]
+    y_values = [init_y]
 
     for e in range(epochs):
         (x, y) = newton_update_x_and_y(previous_x, previous_y, beta)
+        if plot == True:
+            x_values.append(x)
+            y_values.append(y)
 
         # uncomment line below to see next points, and MSE of solution for them
         # print(f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}")
 
         if rosenbrock_function(x, y) == 0:
-            return Result(x, y, e + 1, "Newton's method", OutcomeType.FOUND_MINIMUM)
-        if (rosenbrock_function(x, y)) ** 2 < epsilon:
-            return Result(x, y, e + 1, "Newton's method", OutcomeType.EPSILON_LIMIT)
+            return Result(
+                x,
+                y,
+                e + 1,
+                "Newton's method",
+                OutcomeType.FOUND_MINIMUM,
+                x_values,
+                y_values,
+            )
+        if rosenbrock_function(x, y) ** 2 < epsilon:
+            return Result(
+                x,
+                y,
+                e + 1,
+                "Newton's method",
+                OutcomeType.EPSILON_LIMIT,
+                x_values,
+                y_values,
+            )
         if e == epochs - 1:
-            return Result(x, y, e + 1, "Newton's method", OutcomeType.ITERATIONS_LIMIT)
+            return Result(
+                x,
+                y,
+                e + 1,
+                "Newton's method",
+                OutcomeType.ITERATIONS_LIMIT,
+                x_values,
+                y_values,
+            )
 
         (previous_x, previous_y) = (x, y)
 
@@ -143,6 +208,12 @@ def main():
     parser.add_argument(
         "-a", "--algorithm", type=str, help="Algorithm used to find minimum: [gd|nm]"
     )
+    parser.add_argument(
+        "-p",
+        "--plot",
+        action="store_true",
+        help="Determines whether programme should plot (x, y) points or not",
+    )
 
     args = parser.parse_args()
 
@@ -152,10 +223,11 @@ def main():
     epsilon = args.epsilon
     iterations = args.iterations
     algorithm = args.algorithm
+    plot = args.plot
 
     if algorithm == "gd":
         # get results of one execution of gradient descent for given arguments
-        result = gradient_descent(init_x, init_y, beta, epsilon, iterations)
+        result = gradient_descent(init_x, init_y, beta, epsilon, iterations, plot)
         # calculate mean time of 10 executions of gradient descent for given arguments
         t = timeit(
             "gradient_descent(init_x, init_y, beta, epsilon, iterations)",
@@ -166,7 +238,7 @@ def main():
         )
     elif algorithm == "nm":
         # get results of one execution of Newton's method for given arguments
-        result = newton_method(init_x, init_y, beta, epsilon, iterations)
+        result = newton_method(init_x, init_y, beta, epsilon, iterations, plot)
         # calculate mean time of 10 executions of Newton's method for given arguments
         t = timeit(
             "newton_method(init_x, init_y, beta, epsilon, iterations)",
@@ -181,6 +253,36 @@ def main():
 
     print(result)
     print(f"Mean time of calculations for 10 runs: {t} seconds")
+
+    if plot == True:
+        X = np.arange(-10, 10, 0.1)
+        Y = np.arange(-10, 10, 0.1)
+        X, Y = np.meshgrid(X, Y)
+        Z = rosenbrock_function(X, Y)
+
+        plt.figure(figsize=(15, 10))
+        plt.contour(X, Y, Z, 200)
+        plt.xlim([-10, 10])
+        plt.ylim([-10, 10])
+
+        plt.plot(
+            result.x_values,
+            result.y_values,
+            "--o",
+            linewidth=0.5,
+            markersize=2,
+            color="darkblue",
+            markerfacecolor="darkblue",
+        )
+        plt.plot(init_x, init_y, marker="x", markersize=10, color="g")
+        plt.plot(1, 1, marker="x", markersize=10, color="r")
+        plt.legend(
+            ["Calculated points", "Initial point", "Rosenbrock function's minimum"]
+        )
+        plt.title(f"Series of points calculated by {result.algorithm} algorithm")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.show()
 
 
 if __name__ == "__main__":
