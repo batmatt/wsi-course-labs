@@ -84,6 +84,7 @@ def gradient_descent(
     epsilon: float,
     epochs: int,
     plot: bool = False,
+    debug: bool = False,
 ) -> Result:
     (previous_x, previous_y) = (init_x, init_y)
     x_values = [init_x]
@@ -95,8 +96,10 @@ def gradient_descent(
             x_values.append(x)
             y_values.append(y)
 
-        # uncomment line below to see next points, and MSE of solution for them
-        # print(f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}")
+        if debug == True:
+            print(
+                f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}"
+            )
 
         if rosenbrock_function(x, y) == 0:
             return Result(
@@ -139,6 +142,7 @@ def newton_method(
     epsilon: float,
     epochs: int,
     plot: bool = False,
+    debug: bool = False,
 ) -> Result:
     (previous_x, previous_y) = (init_x, init_y)
     x_values = [init_x]
@@ -150,8 +154,10 @@ def newton_method(
             x_values.append(x)
             y_values.append(y)
 
-        # uncomment line below to see next points, and MSE of solution for them
-        # print(f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}")
+        if debug == True:
+            print(
+                f"epoch: {e}, (x, y): {(x,y)}, MSE: {(0 - rosenbrock_function(x, y)) ** 2}"
+            )
 
         if rosenbrock_function(x, y) == 0:
             return Result(
@@ -215,6 +221,13 @@ def main():
         help="Determines whether programme should plot (x, y) points or not",
     )
 
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="Determines whether programme should print points calculated in each epoch",
+    )
+
     args = parser.parse_args()
 
     init_x = args.init_x
@@ -224,10 +237,13 @@ def main():
     iterations = args.iterations
     algorithm = args.algorithm
     plot = args.plot
+    debug = args.debug
 
     if algorithm == "gd":
         # get results of one execution of gradient descent for given arguments
-        result = gradient_descent(init_x, init_y, beta, epsilon, iterations, plot)
+        result = gradient_descent(
+            init_x, init_y, beta, epsilon, iterations, plot, debug
+        )
         # calculate mean time of 10 executions of gradient descent for given arguments
         t = timeit(
             "gradient_descent(init_x, init_y, beta, epsilon, iterations)",
@@ -238,7 +254,7 @@ def main():
         )
     elif algorithm == "nm":
         # get results of one execution of Newton's method for given arguments
-        result = newton_method(init_x, init_y, beta, epsilon, iterations, plot)
+        result = newton_method(init_x, init_y, beta, epsilon, iterations, plot, debug)
         # calculate mean time of 10 executions of Newton's method for given arguments
         t = timeit(
             "newton_method(init_x, init_y, beta, epsilon, iterations)",
@@ -256,22 +272,22 @@ def main():
 
     # plotting all calculated (x, y) coordinates and actual minimum of rosenbrock function
     if plot == True:
-        X = np.arange(-10, 10, 0.1)
-        Y = np.arange(-10, 10, 0.1)
+        X = np.arange(-13, 13, 0.1)
+        Y = np.arange(-13, 13, 0.1)
         X, Y = np.meshgrid(X, Y)
         Z = rosenbrock_function(X, Y)
 
         # prepare contour plot
         plt.figure(figsize=(15, 10))
         plt.contour(X, Y, Z, 200)
-        plt.xlim([-10, 10])
-        plt.ylim([-10, 10])
+        plt.xlim([-13, 13])
+        plt.ylim([-13, 13])
 
         plt.plot(
             result.x_values,
             result.y_values,
             "--o",
-            linewidth=0.5,
+            linewidth=0.7,
             markersize=2,
             color="darkblue",
             markerfacecolor="darkblue",
