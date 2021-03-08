@@ -49,8 +49,10 @@ def rosenbrock_hess(x: float, y: float):
 
 
 def gradient_update_x_and_y(x: float, y: float, beta: float):
+    # calculate partial derivatives of rosenbrock function
     (dx, dy) = rosenbrock_gradient(x, y)
 
+    # update value of x and y basing on calculated derivatives and given beta coefficient
     new_x = x - beta * dx
     new_y = y - beta * dy
 
@@ -58,9 +60,12 @@ def gradient_update_x_and_y(x: float, y: float, beta: float):
 
 
 def newton_update_x_and_y(x: float, y: float, beta: float):
+    # calculate product of inverted hessian matrix and gradient of rosenbrock function
+    # (author's note - i know it could be named better than dx/dy like partial derivatives, but i don't really have idea how)
     dx_dy = np.array(np.linalg.inv(rosenbrock_hess(x, y)) @ rosenbrock_gradient(x, y))
     (dx, dy) = (dx_dy[0][0], dx_dy[0][1])
 
+    # update value of x and y basing on calculated derivatives and given beta coefficient
     new_x = x - beta * dx
     new_y = y - beta * dy
 
@@ -149,7 +154,9 @@ def main():
     algorithm = args.algorithm
 
     if algorithm == "gd":
+        # get results of one execution of gradient descent for given arguments
         result = gradient_descent(init_x, init_y, beta, epsilon, iterations)
+        # calculate mean time of 10 executions of gradient descent for given arguments
         t = timeit(
             "gradient_descent(init_x, init_y, beta, epsilon, iterations)",
             "from __main__ import gradient_descent;"
@@ -158,7 +165,9 @@ def main():
             number=10,
         )
     elif algorithm == "nm":
+        # get results of one execution of Newton's method for given arguments
         result = newton_method(init_x, init_y, beta, epsilon, iterations)
+        # calculate mean time of 10 executions of Newton's method for given arguments
         t = timeit(
             "newton_method(init_x, init_y, beta, epsilon, iterations)",
             "from __main__ import newton_method;"
