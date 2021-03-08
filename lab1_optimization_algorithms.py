@@ -254,12 +254,14 @@ def main():
     print(result)
     print(f"Mean time of calculations for 10 runs: {t} seconds")
 
+    # plotting all calculated (x, y) coordinates and actual minimum of rosenbrock function
     if plot == True:
         X = np.arange(-10, 10, 0.1)
         Y = np.arange(-10, 10, 0.1)
         X, Y = np.meshgrid(X, Y)
         Z = rosenbrock_function(X, Y)
 
+        # prepare contour plot
         plt.figure(figsize=(15, 10))
         plt.contour(X, Y, Z, 200)
         plt.xlim([-10, 10])
