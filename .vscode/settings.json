@@ -1,0 +1,7 @@
+{
+    "activestate.promptRuntimeCreation": false,
+    "python.analysis.extraPaths": [
+        "evolutionary_algorithms",
+        "optimization_algorithms"
+    ]
+}
