@@ -19,6 +19,22 @@ class CoordinatesGenerator:
 
         return np.meshgrid(X, Y)
 
+    def clustered_distribution(self):
+        """
+        Initializes coordinations of cities grouped into clusters.
+
+        """
+
+    def random_distribution(self):
+        """
+        Initializes coordinations of cities in random distribution.
+
+        """
+        X = self.cities_number * np.random.rand(self.cities_number)
+        Y = self.cities_number * np.random.rand(self.cities_number)
+
+        return (X, Y)
+
     def find_divisors_nearest_to_square(self):
         """
         Finds pair of divisors of number of cities that is closest

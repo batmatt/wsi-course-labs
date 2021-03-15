@@ -2,15 +2,13 @@ import numpy as np
 
 
 class City:
-    def __init__(self, x: int, y: int, cities):
+    def __init__(self, x: int, y: int, name: str):
         # dictonary of distances to other cities
         self.distances = {}
 
-        self.name = f"C{len(cities) + 1}"
+        self.name = name
         self.x = x
         self.y = y
-
-        cities.append(self)
 
     def fill_distances_dict(self, cities):
         """
