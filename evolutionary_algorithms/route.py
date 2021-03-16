@@ -8,15 +8,17 @@ class Route:
         # finish cycle on the first city from the route
         self.sequence_of_cities.append(self.sequence_of_cities[0])
 
-        self.calculate_route_length()
+        self.length = self.calculate_route_length()
 
     def calculate_route_length(self):
-        self.length = 0.0
+        length = 0.0
         i = 0
 
         while i < len(self.sequence_of_cities) - 1:
             remote_city = self.sequence_of_cities[i + 1]
             distance = self.sequence_of_cities[i].distances[remote_city.name]
 
-            self.length += distance
+            length += distance
             i += 1
+
+        return length

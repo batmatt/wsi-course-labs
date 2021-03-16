@@ -2,8 +2,20 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 from city import City
-from route import Route
+from population import Population
 from coordinates_generator import CoordinatesGenerator
+
+COORD_X = 0
+COORD_Y = 1
+DISTRIBUTION_NAME = {
+    "ud": "uniform",
+    "cd": "clustered",
+    "rd": "random",
+}
+
+
+def unzip_list_of_points(points):
+    return list(zip(*points))
 
 
 def main():
@@ -15,35 +27,43 @@ def main():
         type=str,
         help="Type of cities distribution: [ud|cd|rd] - [uniform|clustered|random]",
     )
+    parser.add_argument(
+        "-p", "--population_size", type=int, help="Size of routes population"
+    )
 
     args = parser.parse_args()
 
     cities_number = args.cities_number
     cities_distribution = args.cities_distribution
+    population_size = args.population_size
 
     cities = []
 
     coordinates_generator = CoordinatesGenerator(cities_number)
 
     if cities_distribution == "ud":
-        X, Y = coordinates_generator.uniform_distribution()
-        print(X)
+        points = coordinates_generator.uniform_distribution()
     elif cities_distribution == "cd":
-        X, Y = coordinates_generator.clustered_distribution()
+        points = coordinates_generator.clustered_distribution()
     elif cities_distribution == "rd":
-        X, Y = coordinates_generator.random_distribution()
-        for i in range(cities_number):
-            cities.append(City(X[i], Y[i], f"C{len(cities) + 1}"))
+        points = coordinates_generator.random_distribution()
     else:
         print("Wrong distribution type")
         exit(1)
 
+    for point in points:
+        cities.append(City(point[COORD_X], point[COORD_Y], f"C{len(cities) + 1}"))
+
     for city in cities:
         city.fill_distances_dict(cities)
 
-    route = Route(cities)
+    population = Population(population_size, cities)
+    print("Shortest path: " + str(population.get_fittest_route().length))
 
-    plt.plot(X, Y, "-o")
+    plt.scatter(*unzip_list_of_points(points))
+    plt.title(
+        f"Cities arranged with {DISTRIBUTION_NAME[cities_distribution]} distribution"
+    )
     plt.show()
 
 
