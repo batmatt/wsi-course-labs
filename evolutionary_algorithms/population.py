@@ -2,14 +2,12 @@ from route import Route
 
 
 class Population:
-    def __init__(self, population_size: int, cities):
+    def __init__(self, is_initial=False, population_size=0, cities=[]):
         self.routes_population = []
 
-        for i in range(population_size):
-            self.routes_population.append(Route(cities))
-
-        for route in self.routes_population:
-            print(route.length)
+        if is_initial:
+            for i in range(population_size):
+                self.routes_population.append(Route(cities))
 
     def get_fittest_route(self):
         """

@@ -10,9 +10,9 @@ class City:
         self.x = x
         self.y = y
 
-    def fill_distances_dict(self, cities):
+    def fill_distances_dict(self, cities: list):
         """
-        self, cities --> None
+        self, list --> None
 
         Fills dictonary of distances of the city
         object basing on cities list.
@@ -29,7 +29,7 @@ class City:
 
     def calculate_distance(self, city):
         """
-        self, city --> None
+        self, City --> None
 
         Calculates distance to other city as Euclidean
         distance (which is identical with norm of the vector)

@@ -10,6 +10,17 @@ class Route:
 
         self.length = self.calculate_route_length()
 
+    def __str__(self):
+        sequence_of_cities_representation = ""
+
+        for city in self.sequence_of_cities:
+            sequence_of_cities_representation += city.name + " -> "
+
+        # Slice sequence to remove arrow after last city name
+        sequence_of_cities_representation = sequence_of_cities_representation[:-3]
+
+        return f"Route: {sequence_of_cities_representation}\nLength: {self.length} "
+
     def calculate_route_length(self):
         length = 0.0
         i = 0

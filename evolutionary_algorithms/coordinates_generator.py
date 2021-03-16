@@ -16,8 +16,11 @@ class CoordinatesGenerator:
 
         X = np.linspace(0, M * 10, M)
         Y = np.linspace(0, N * 10, N)
+
+        # create grid coordinates based on X and Y linspaces
         mg = np.meshgrid(X, Y)
 
+        # return list of points (x, y)
         return [(x, y) for (x, y) in zip(mg[0].flatten(), mg[1].flatten())]
 
     def clustered_distribution(self):
@@ -34,9 +37,8 @@ class CoordinatesGenerator:
         X = self.cities_number * np.random.rand(self.cities_number)
         Y = self.cities_number * np.random.rand(self.cities_number)
 
-        print(X)
-
-        return zip(X, Y)
+        # return list of points (x, y)
+        return [(x, y) for (x, y) in zip(X, Y)]
 
     def find_divisors_nearest_to_square(self):
         """

@@ -1,6 +1,6 @@
 import argparse
-import numpy as np
 import matplotlib.pyplot as plt
+import random
 from city import City
 from population import Population
 from coordinates_generator import CoordinatesGenerator
@@ -14,7 +14,30 @@ DISTRIBUTION_NAME = {
 }
 
 
+def tournament_selection(tournament_size: int, population: Population):
+    """
+    int, Population --> Route
+
+    Creates tournament population containing tournament_size
+    randomly selected routes from initial population and returns
+    the fittest one.
+
+    """
+    tournament_population = Population()
+
+    for i in range(tournament_size):
+        random_route = random.choice(population.routes_population)
+        tournament_population.routes_population.append(random_route)
+
+    return tournament_population.get_fittest_route()
+
+
 def unzip_list_of_points(points):
+    """
+    Returns unzipped list of points, so it can be plotted
+    with scatter function.
+
+    """
     return list(zip(*points))
 
 
@@ -30,41 +53,56 @@ def main():
     parser.add_argument(
         "-p", "--population_size", type=int, help="Size of routes population"
     )
+    parser.add_argument(
+        "-t",
+        "--tournament_size",
+        type=int,
+        help="Number of individuals taking part in tournament",
+    )
+    parser.add_argument(
+        "-i", "--iterations", type=int, help="Maximum number of iterations"
+    )
 
     args = parser.parse_args()
 
-    cities_number = args.cities_number
-    cities_distribution = args.cities_distribution
-    population_size = args.population_size
+    _cities_number = args.cities_number
+    _cities_distribution = args.cities_distribution
+    _population_size = args.population_size
+    _tournament_size = args.tournament_size
+    _iterations = args.iterations
 
-    cities = []
+    _cities = []
 
-    coordinates_generator = CoordinatesGenerator(cities_number)
+    coordinates_generator = CoordinatesGenerator(_cities_number)
 
-    if cities_distribution == "ud":
+    if _cities_distribution == "ud":
         points = coordinates_generator.uniform_distribution()
-    elif cities_distribution == "cd":
+    elif _cities_distribution == "cd":
         points = coordinates_generator.clustered_distribution()
-    elif cities_distribution == "rd":
+    elif _cities_distribution == "rd":
         points = coordinates_generator.random_distribution()
     else:
         print("Wrong distribution type")
         exit(1)
 
     for point in points:
-        cities.append(City(point[COORD_X], point[COORD_Y], f"C{len(cities) + 1}"))
+        _cities.append(City(point[COORD_X], point[COORD_Y], f"C{len(_cities) + 1}"))
 
-    for city in cities:
-        city.fill_distances_dict(cities)
-
-    population = Population(population_size, cities)
-    print("Shortest path: " + str(population.get_fittest_route().length))
+    for city in _cities:
+        city.fill_distances_dict(_cities)
 
     plt.scatter(*unzip_list_of_points(points))
     plt.title(
-        f"Cities arranged with {DISTRIBUTION_NAME[cities_distribution]} distribution"
+        f"Cities arranged with {DISTRIBUTION_NAME[_cities_distribution]} distribution"
     )
     plt.show()
+
+    _population = Population(
+        is_initial=True, population_size=_population_size, cities=_cities
+    )
+    print(f"Fittest route of initial population:\n{_population.get_fittest_route()}")
+
+    tournament_selection(_tournament_size, _population)
 
 
 if __name__ == "__main__":
