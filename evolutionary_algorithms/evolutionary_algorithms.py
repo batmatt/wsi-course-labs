@@ -32,6 +32,37 @@ def tournament_selection(tournament_size: int, population: Population):
     return tournament_population.get_fittest_route()
 
 
+def mutate(mutation_threshold: float, population: Population):
+    """"""
+
+    if random.random() > mutation_threshold:
+        # pick random route from population
+        random_route = random.choice(population.routes_population)
+
+        print(f"Route before mutation: {random_route}")
+
+        # randomize indices of two cities in chosen route
+        first_city_index, second_city_index = random.sample(
+            range(len(random_route.sequence_of_cities)), 2
+        )
+
+        print(first_city_index, second_city_index)
+
+        # swap cities at two random indices using Python swap idiom
+        (
+            random_route.sequence_of_cities[first_city_index],
+            random_route.sequence_of_cities[second_city_index],
+        ) = (
+            random_route.sequence_of_cities[second_city_index],
+            random_route.sequence_of_cities[first_city_index],
+        )
+
+        # calculate length of route after mutation
+        random_route.length = random_route.calculate_route_length()
+
+        print(f"Route after mutation mutation: {random_route}")
+
+
 def unzip_list_of_points(points):
     """
     Returns unzipped list of points, so it can be plotted
@@ -60,6 +91,12 @@ def main():
         help="Number of individuals taking part in tournament",
     )
     parser.add_argument(
+        "-m",
+        "--mutation_threshold",
+        type=float,
+        help="Threshold above which mutation occurs",
+    )
+    parser.add_argument(
         "-i", "--iterations", type=int, help="Maximum number of iterations"
     )
 
@@ -69,6 +106,7 @@ def main():
     _cities_distribution = args.cities_distribution
     _population_size = args.population_size
     _tournament_size = args.tournament_size
+    _mutation_threhold = args.mutation_threshold
     _iterations = args.iterations
 
     _cities = []
@@ -103,6 +141,7 @@ def main():
     print(f"Fittest route of initial population:\n{_population.get_fittest_route()}")
 
     tournament_selection(_tournament_size, _population)
+    mutate(_mutation_threhold, _population)
 
 
 if __name__ == "__main__":
