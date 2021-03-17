@@ -1,7 +1,9 @@
 import argparse
 import matplotlib.pyplot as plt
 import random
+import copy
 from city import City
+from route import Route
 from population import Population
 from coordinates_generator import CoordinatesGenerator
 
@@ -24,10 +26,9 @@ def tournament_selection(tournament_size: int, population: Population):
 
     """
     tournament_population = Population()
-
-    for i in range(tournament_size):
-        random_route = random.choice(population.routes_population)
-        tournament_population.routes_population.append(random_route)
+    tournament_population.routes_population = random.sample(
+        population.routes_population, tournament_size
+    )
 
     return tournament_population.get_fittest_route()
 
@@ -36,36 +37,38 @@ def mutate(mutation_threshold: float, population: Population):
     """
     float, Population --> None
 
-    Mutates population individual by swapping two random
+    Mutates population individuals by swapping two random
     cities in the random route.
 
     """
 
-    if random.random() > mutation_threshold:
-        # pick random route from population
-        random_route = random.choice(population.routes_population)
+    mutations_number = 0
+    mutation_population = Population()
 
-        # print(f"Route before mutation: {random_route}")
+    for route in population.routes_population:
+        if random.random() > mutation_threshold:
+            # pick subset of routes that will mutate
+            mutations_number = mutations_number + 1
+            mutation_population.routes_population = random.sample(
+                population.routes_population, 1
+            )
 
+    for route in mutation_population.routes_population:
         # randomize indices of two cities in chosen route
         # skip first and last element, because it could break route
         first_city_index, second_city_index = random.sample(
-            range(1, len(random_route.sequence_of_cities) - 1), 2
+            range(1, len(route.sequence_of_cities) - 1), 2
         )
-
         # swap cities at two random indices using Python swap idiom
         (
-            random_route.sequence_of_cities[first_city_index],
-            random_route.sequence_of_cities[second_city_index],
+            route.sequence_of_cities[first_city_index],
+            route.sequence_of_cities[second_city_index],
         ) = (
-            random_route.sequence_of_cities[second_city_index],
-            random_route.sequence_of_cities[first_city_index],
+            route.sequence_of_cities[second_city_index],
+            route.sequence_of_cities[first_city_index],
         )
-
         # calculate length of route after mutation
-        random_route.length = random_route.calculate_route_length()
-
-        # print(f"Route after mutation mutation: {random_route}")
+        route.length = route.calculate_route_length()
 
 
 def unzip_list_of_points(points):
@@ -140,13 +143,34 @@ def main():
     )
     plt.show()
 
-    _population = Population(
+    initial_population = Population(
         is_initial=True, population_size=_population_size, cities=_cities
     )
-    print(f"Fittest route of initial population:\n{_population.get_fittest_route()}")
 
-    tournament_selection(_tournament_size, _population)
-    mutate(_mutation_threhold, _population)
+    fittest_route = copy.deepcopy(initial_population.get_fittest_route())
+    print(f"Fittest route of initial population:\n{fittest_route}")
+
+    generation = 1
+    old_population = initial_population
+    while generation < _iterations:
+        new_population = Population()
+
+        for x in range(_population_size):
+            child_route = tournament_selection(_tournament_size, old_population)
+            new_population.routes_population.append(child_route)
+
+        mutate(_mutation_threhold, new_population)
+
+        if new_population.get_fittest_route().length < fittest_route.length:
+            fittest_route = copy.deepcopy(new_population.get_fittest_route())
+            best_generation = generation
+
+        old_population = new_population
+        generation = generation + 1
+
+    print(
+        f"Fittest route overall:\n{fittest_route}\nFound in {best_generation}. generation"
+    )
 
 
 if __name__ == "__main__":
