@@ -33,20 +33,25 @@ def tournament_selection(tournament_size: int, population: Population):
 
 
 def mutate(mutation_threshold: float, population: Population):
-    """"""
+    """
+    float, Population --> None
+
+    Mutates population individual by swapping two random
+    cities in the random route.
+
+    """
 
     if random.random() > mutation_threshold:
         # pick random route from population
         random_route = random.choice(population.routes_population)
 
-        print(f"Route before mutation: {random_route}")
+        # print(f"Route before mutation: {random_route}")
 
         # randomize indices of two cities in chosen route
+        # skip first and last element, because it could break route
         first_city_index, second_city_index = random.sample(
-            range(len(random_route.sequence_of_cities)), 2
+            range(1, len(random_route.sequence_of_cities) - 1), 2
         )
-
-        print(first_city_index, second_city_index)
 
         # swap cities at two random indices using Python swap idiom
         (
@@ -60,7 +65,7 @@ def mutate(mutation_threshold: float, population: Population):
         # calculate length of route after mutation
         random_route.length = random_route.calculate_route_length()
 
-        print(f"Route after mutation mutation: {random_route}")
+        # print(f"Route after mutation mutation: {random_route}")
 
 
 def unzip_list_of_points(points):
