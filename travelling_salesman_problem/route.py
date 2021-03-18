@@ -10,7 +10,7 @@ class Route:
 
         self.length = self.calculate_route_length()
 
-    def __str__(self):
+    def __str__(self) -> str:
         sequence_of_cities_representation = ""
 
         for city in self.sequence_of_cities:

@@ -1,7 +1,7 @@
 {
     "activestate.promptRuntimeCreation": false,
     "python.analysis.extraPaths": [
-        "evolutionary_algorithms",
+        "travelling_salesman_problem",
         "optimization_algorithms"
     ]
 }

@@ -2,9 +2,11 @@ import argparse
 import matplotlib.pyplot as plt
 import random
 import copy
+import timeit
 from city import City
 from population import Population
 from coordinates_generator import CoordinatesGenerator
+from results import Results
 
 COORD_X = 0
 COORD_Y = 1
@@ -84,7 +86,7 @@ def evolutionary_algorithm_loop(
         generation = generation + 1
 
     print(
-        f"Fittest route overall:\n{fittest_route}\nFound in {best_generation}. generation"
+        f"Fittest route overall:\n{fittest_route}\nFound in {best_generation}. generation\n"
     )
 
     if plot:
@@ -93,6 +95,8 @@ def evolutionary_algorithm_loop(
         plt.xlabel("generation")
         plt.ylabel("length of the fittest route")
         plt.show()
+
+    return fittest_route.length, best_generation
 
 
 def tournament_selection(tournament_size: int, population: Population):
@@ -233,7 +237,9 @@ def main():
         is_initial=True, population_size=_population_size, cities=_cities
     )
 
-    evolutionary_algorithm_loop(
+    _results = Results()
+
+    result = evolutionary_algorithm_loop(
         _initial_population,
         _population_size,
         _tournament_size,
@@ -241,6 +247,36 @@ def main():
         _iterations,
         _plot,
     )
+
+    _results.update_results_lists(result[0], result[1])
+
+    for i in range(4):
+        result = evolutionary_algorithm_loop(
+            _initial_population,
+            _population_size,
+            _tournament_size,
+            _mutation_threhold,
+            _iterations,
+            _plot,
+        )
+
+        _results.update_results_lists(result[0], result[1])
+
+    _results.calculate_metrics()
+    print(_results)
+
+    ## calculate mean time of 15 executions of Newton's method for given arguments
+    # t = timeit(
+    #    "evolutionary_algorithm_loop(initial_population, population_size, tournament_size, mutation_threhold, iterations)",
+    #    "from __main__ import evolutionary_algorithm_loop;"
+    #    f"_initial_population = {_initial_population}; population_size = {_population_size}; tournament_size = {_tournament_size};"
+    #    f"mutation_threhold = {_mutation_threhold}; iterations = {_iterations}",
+    #    number=15,
+    # )
+
+
+#
+# print(f"Mean time: {t}")
 
 
 if __name__ == "__main__":
