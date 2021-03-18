@@ -1,10 +1,8 @@
 import argparse
 import matplotlib.pyplot as plt
-import numpy as np
 import random
 import copy
 from city import City
-from route import Route
 from population import Population
 from coordinates_generator import CoordinatesGenerator
 
