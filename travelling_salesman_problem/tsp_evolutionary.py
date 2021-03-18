@@ -63,8 +63,7 @@ def evolutionary_algorithm_loop(
             generation % (0.2 * iterations_limit) == 0
             or generation == iterations_limit - 1
         ):
-            X = []
-            Y = []
+            X, Y = []
             for city in fittest_route.sequence_of_cities:
                 X.append(city.x)
                 Y.append(city.y)
@@ -265,18 +264,16 @@ def main():
     _results.calculate_metrics()
     print(_results)
 
-    ## calculate mean time of 15 executions of Newton's method for given arguments
-    # t = timeit(
-    #    "evolutionary_algorithm_loop(initial_population, population_size, tournament_size, mutation_threhold, iterations)",
-    #    "from __main__ import evolutionary_algorithm_loop;"
-    #    f"_initial_population = {_initial_population}; population_size = {_population_size}; tournament_size = {_tournament_size};"
-    #    f"mutation_threhold = {_mutation_threhold}; iterations = {_iterations}",
-    #    number=15,
-    # )
+    ## calculate mean time of 15 executions of algorithm
+    t = timeit(
+        "evolutionary_algorithm_loop(initial_population, population_size, tournament_size, mutation_threhold, iterations)",
+        "from __main__ import evolutionary_algorithm_loop;"
+        f"_initial_population = {_initial_population}; population_size = {_population_size}; tournament_size = {_tournament_size};"
+        f"mutation_threhold = {_mutation_threhold}; iterations = {_iterations}",
+        number=15,
+    )
 
-
-#
-# print(f"Mean time: {t}")
+    print(f"Mean time of 15 executions: {t}")
 
 
 if __name__ == "__main__":
