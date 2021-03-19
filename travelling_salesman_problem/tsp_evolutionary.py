@@ -2,7 +2,6 @@ import argparse
 import matplotlib.pyplot as plt
 import random
 import copy
-from timeit import timeit
 from city import City
 from population import Population
 from coordinates_generator import CoordinatesGenerator
@@ -25,6 +24,7 @@ def evolutionary_algorithm_loop(
     tournament_size: int,
     mutation_threshold: float,
     iterations_limit: int,
+    execution: int,
     plot: bool = False,
 ):
     """
@@ -72,6 +72,7 @@ def evolutionary_algorithm_loop(
                 iterations_limit,
                 fittest_route,
                 generation,
+                execution,
             )
 
         old_population = new_population
@@ -87,7 +88,8 @@ def evolutionary_algorithm_loop(
         plt.xlabel("generation")
         plt.ylabel("length of the fittest route")
         plt.savefig(
-            f"plots/fittest_routes_{cities_distribution}_distribution_{population_size}_{mutation_threshold}_{iterations_limit}.png"
+            f"plots/fittest_routes_{cities_distribution}_distribution_{population_size}_"
+            + f"{mutation_threshold}_{iterations_limit}_exec_{execution}.png"
         )
         plt.clf()
 
@@ -156,6 +158,7 @@ def plot_fittest_route(
     iterations: int,
     fittest_route: Route,
     generation: int,
+    execution: int,
 ):
     X = []
     Y = []
@@ -176,7 +179,8 @@ def plot_fittest_route(
         ]
     )
     plt.savefig(
-        f"plots/{cities_distribution}_distribution_{population_size}_{mutation_threshold}_{iterations}_{generation}.png"
+        f"plots/{cities_distribution}_distribution_{population_size}_{mutation_threshold}_"
+        + f"{iterations}_{generation}_exec_{execution}.png"
     )
     plt.clf()
 
@@ -266,6 +270,7 @@ def main():
 
     _results = Results()
 
+    _execution = 0
     result = evolutionary_algorithm_loop(
         _cities_distribution,
         _initial_population,
@@ -273,12 +278,14 @@ def main():
         _tournament_size,
         _mutation_threshold,
         _iterations,
+        _execution,
         _plot,
     )
 
     _results.update_results_lists(result[0], result[1])
 
     for i in range(14):
+        _execution = _execution + 1
         result = evolutionary_algorithm_loop(
             _cities_distribution,
             _initial_population,
@@ -286,6 +293,7 @@ def main():
             _tournament_size,
             _mutation_threshold,
             _iterations,
+            _execution,
             _plot,
         )
 
@@ -293,20 +301,6 @@ def main():
 
     _results.calculate_metrics()
     print(_results)
-
-    ### calculate mean time of 15 executions of algorithm
-    # t = timeit(
-    #    "evolutionary_algorithm_loop(initial_population, population_size, tournament_size, mutation_threhold, iterations)",
-    #    "from __main__ import evolutionary_algorithm_loop; from population import Population;"
-    #    f""
-    #    f"initial_population = {_initial_population}; population_size = {_population_size}; tournament_size = {_tournament_size};"
-    #    f"mutation_threhold = {_mutation_threshold}; iterations = {_iterations}",
-    #    number=15,
-    # )
-
-
-#
-# print(f"Mean time of 15 executions: {t}")
 
 
 if __name__ == "__main__":
