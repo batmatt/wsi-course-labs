@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from sklearn.datasets import make_blobs
 
 
 class CoordinatesGenerator:
@@ -26,8 +27,22 @@ class CoordinatesGenerator:
     def clustered_distribution(self):
         """
         Initializes coordinations of cities grouped into clusters.
+        # TODO: Think about some better generator, that is parametrizable but for now i am to exhausted with this lab to do it
 
         """
+        centers = [(10, 10), (20, 20), (30, 30)]
+        cluster_std = [2, 2, 2]
+
+        X, y = make_blobs(
+            n_samples=30,
+            cluster_std=cluster_std,
+            centers=centers,
+            n_features=2,
+            random_state=1,
+        )
+
+        # return list of points (x, y)
+        return [(x, y) for (x, y) in X]
 
     def random_distribution(self):
         """
