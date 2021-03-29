@@ -179,8 +179,8 @@ def plot_fittest_route(
         ]
     )
     plt.savefig(
-        f"plots/{cities_distribution}_distribution_{population_size}_{mutation_threshold}_"
-        + f"{iterations}_{generation}_exec_{execution}.png"
+        f"plots/exec_{execution}_{cities_distribution}_distribution_{population_size}"
+        f"{mutation_threshold}_{iterations}_{generation}.png"
     )
     plt.clf()
 
