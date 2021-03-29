@@ -121,14 +121,11 @@ def mutate(mutation_threshold: float, population: Population):
     cities in the random route.
 
     """
-
-    mutations_number = 0
     mutation_population = Population()
 
     for route in population.routes_population:
         if random.random() > mutation_threshold:
             # pick subset of routes that will mutate
-            mutations_number = mutations_number + 1
             mutation_population.routes_population = random.sample(
                 population.routes_population, 1
             )
