@@ -2,6 +2,7 @@
     "activestate.promptRuntimeCreation": false,
     "python.analysis.extraPaths": [
         "travelling_salesman_problem",
-        "optimization_algorithms"
+        "optimization_algorithms",
+        "deterministic_games_reversi"
     ]
 }
