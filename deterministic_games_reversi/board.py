@@ -1,3 +1,6 @@
+from typing import Literal
+
+
 COORD_X = 0
 COORD_Y = 1
 
@@ -9,7 +12,12 @@ DIRECTIONS = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 
 
 
 class Board:
-    def __init__(self, size) -> None:
+    """
+    Class representing the board state
+
+    """
+
+    def __init__(self, size: int) -> None:
         self.size = size
 
         # Fill the board with empty places
@@ -26,7 +34,12 @@ class Board:
         for row in range(len(self.board)):
             print(*self.board[row], sep=" ")
 
-    def update_board(self, player_turn, move):
+    def update_board(self, player_turn: Literal["@", "O"], move) -> None:
+        """
+        Updates board after player makes a move in its turn
+
+        """
+
         new_disc_position = move[0]
         discs_to_flip = move[1]
 
@@ -44,6 +57,10 @@ class Board:
         Board.print_board(self)
 
     def count_discs(self):
+        """
+        Returns current state of black and white's discs count
+
+        """
         white_count = 0
         black_count = 0
         for x in range(self.size):
@@ -53,9 +70,13 @@ class Board:
                 if self.board[x][y] == BLACK:
                     black_count += 1
 
-        return (white_count, black_count)
+        return white_count, black_count
 
-    def get_all_discs_coords(self, color):
+    def get_all_discs_coords(self, color: Literal["@", "O"]) -> list:
+        """
+        Returns a list with positions of each disc of given color
+
+        """
         discs = []
 
         for x in range(self.size):
@@ -65,7 +86,13 @@ class Board:
 
         return discs
 
-    def find_possible_moves_for_player(self, color):
+    def find_possible_moves_for_player(self, color: Literal["@", "O"]) -> dict:
+        """
+        Finds all possible moves for each disc of choosen color.
+        Returns dict with values representing positions of opposing color discs
+        which will be flipped after making a legal move.
+
+        """
         possible_moves = {}
 
         if color == WHITE:

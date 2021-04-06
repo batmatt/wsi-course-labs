@@ -2,7 +2,7 @@ from engines.engine import IEngine
 
 
 class MinimaxEngine(IEngine):
-    def __init__(self, depth, is_maximizing_player, color):
+    def __init__(self, depth: int, is_maximizing_player, color: str):
         self.depth = depth
         self.is_maximizing_player = is_maximizing_player
         self.color = color
