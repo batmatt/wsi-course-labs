@@ -33,6 +33,7 @@ class Board:
     def print_board(self):
         for row in range(len(self.board)):
             print(*self.board[row], sep=" ")
+        print("\n")
 
     def update_board(self, player_turn: Literal["@", "O"], move) -> None:
         """
@@ -52,8 +53,6 @@ class Board:
             self.board[new_disc_position[COORD_X]][new_disc_position[COORD_Y]] = WHITE
             for flip in discs_to_flip:
                 self.board[flip[COORD_X]][flip[COORD_Y]] = WHITE
-
-        # Board.print_board(self)
 
     def count_discs(self):
         """
@@ -112,6 +111,9 @@ class Board:
                         break
                     elif self.board[dx][dy] == opposing_color:
                         flips.append((dx, dy))
+                    # if we step into color in line after finding possible flips of opposing color we must drop them ;/ that's the rules, i don't make the rules
+                    elif self.board[dx][dy] == color and flips:
+                        flips = []
                     elif self.board[dx][dy] == EMPTY and flips:
                         possible_moves[(dx, dy)] = flips
                         # break to stop on the first empty space after opposing color discs
@@ -119,21 +121,19 @@ class Board:
 
         return list(possible_moves.items())
 
-    def is_state_terminal(self, player_turn):
+    def is_state_terminal(self, player_turn: Literal["@", "O"], turns: int):
         # current player have to have at least one disc on the board
         if self.get_all_discs_coords(player_turn):
             # current player have to be able to perform some move
             if self.find_possible_moves_for_player(player_turn):
                 return False
             else:
-                white_score, black_score = self.count_discs()
+                w, b = self.count_discs()
                 print(
-                    f"\nGame finished.\nBlack score: {black_score}\nWhite score: {white_score}"
+                    f"\nGame finished after {turns} turns.\nBlack score: {b}\nWhite score: {w}"
                 )
                 return True
         else:
-            white_score, black_score = self.count_discs()
-            print(
-                f"\nGame finished.\nBlack score: {black_score}\nWhite score: {white_score}"
-            )
+            w, b = self.count_discs()
+            print(f"\nGame finished {turns} turns.\nBlack score: {b}\nWhite score: {w}")
             return True
