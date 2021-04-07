@@ -38,10 +38,10 @@ def main():
         _board.print_board()
 
         first_player = RandomEngine("Black")
-        second_player = MinimaxEngine(_depth, False, "White")
+        second_player = MinimaxEngine(_depth, "O", _board)
 
         if _starting_engine == "mm":
-            first_player = MinimaxEngine(_depth, True, "Black")
+            first_player = MinimaxEngine(_depth, "@", _board)
             second_player = RandomEngine("White")
 
         player_turn = BLACK
@@ -54,14 +54,14 @@ def main():
                         _board.find_possible_moves_for_player(player_turn)
                     ),
                 )
+                _board.print_board()
                 player_turn = WHITE
             else:
                 _board.update_board(
                     player_turn,
-                    second_player.perform_move(
-                        _board.find_possible_moves_for_player(player_turn)
-                    ),
+                    second_player.perform_move(),
                 )
+                _board.print_board()
                 player_turn = BLACK
 
     else:

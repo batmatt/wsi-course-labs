@@ -25,10 +25,10 @@ class Board:
 
         # Initialize starting discs in the centre of the board
         half = (self.size) // 2
-        self.board[half - 1][half - 1] = WHITE
-        self.board[half][half] = WHITE
         self.board[half - 1][half] = BLACK
         self.board[half][half - 1] = BLACK
+        self.board[half - 1][half - 1] = WHITE
+        self.board[half][half] = WHITE
 
     def print_board(self):
         for row in range(len(self.board)):
@@ -46,7 +46,6 @@ class Board:
         if player_turn == BLACK:
             self.board[new_disc_position[COORD_X]][new_disc_position[COORD_Y]] = BLACK
             for flip in discs_to_flip:
-                print(flip)
                 self.board[flip[COORD_X]][flip[COORD_Y]] = BLACK
 
         elif player_turn == WHITE:
@@ -54,7 +53,7 @@ class Board:
             for flip in discs_to_flip:
                 self.board[flip[COORD_X]][flip[COORD_Y]] = WHITE
 
-        Board.print_board(self)
+        # Board.print_board(self)
 
     def count_discs(self):
         """
@@ -86,7 +85,7 @@ class Board:
 
         return discs
 
-    def find_possible_moves_for_player(self, color: Literal["@", "O"]) -> dict:
+    def find_possible_moves_for_player(self, color: Literal["@", "O"]) -> list:
         """
         Finds all possible moves for each disc of choosen color.
         Returns dict with values representing positions of opposing color discs
@@ -118,7 +117,7 @@ class Board:
                         # break to stop on the first empty space after opposing color discs
                         break
 
-        return possible_moves
+        return list(possible_moves.items())
 
     def is_state_terminal(self, player_turn):
         # current player have to have at least one disc on the board

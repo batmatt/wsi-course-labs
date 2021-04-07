@@ -8,7 +8,7 @@ class IEngine:
     """
 
     @abstractmethod
-    def perform_move(self, possible_moves: dict):
+    def perform_move(self):
         """
         Makes move based on implemented engine logic
 

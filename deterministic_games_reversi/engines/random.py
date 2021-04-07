@@ -13,8 +13,7 @@ class RandomEngine(IEngine):
         self.color = color
         print(f"Random engine color: {self.color}\n")
 
-    def perform_move(self, possible_moves: dict):
-        moves_list = list(possible_moves.items())
-        move = random.choice(moves_list)
+    def perform_move(self, possible_moves: list):
+        move = random.choice(possible_moves)
 
         return move
