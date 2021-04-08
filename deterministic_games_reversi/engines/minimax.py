@@ -1,5 +1,4 @@
 import time
-import random
 
 from typing import Literal
 from board import Board

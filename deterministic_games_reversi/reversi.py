@@ -5,6 +5,7 @@ Mateusz Winnicki
 """
 
 import argparse
+import time
 from board import Board, BLACK, WHITE
 from engines.minimax import MinimaxEngine
 from engines.random import RandomEngine
@@ -87,6 +88,8 @@ def main():
 
         # make moves based on engine calculations until one of the players can't place another disc in its turn
         _turns = 0
+
+        start = time.time()
         while not _board.is_state_terminal(player_turn, _turns):
             _turns = _turns + 1
             if player_turn == BLACK:
@@ -103,6 +106,10 @@ def main():
                 )
                 _board.print_board()
                 player_turn = BLACK
+
+        end = time.time()
+        if _timer:
+            print(f"Whole game took {end - start} seconds")
 
     else:
         print("Wrong length of the board's side (must be even)")
