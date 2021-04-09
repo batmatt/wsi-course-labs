@@ -1,0 +1,35 @@
+% helper function describing that house A is right at the left or right side of house B in the list
+neighbour(A, B, List) :- nextto(A, B, List).
+neighbour(A, B, List) :- nextto(A, B, List).
+
+
+% house is described by properties in given order:
+house(Nationality, Color, Drink, Smoke, Animal)
+
+% basing on hints given by mr Einstein we will describe facts about members of the neighbourhood
+neighbourhood(Houses) :-
+    length(Houses, 5),
+    member(house(_, _, _, _, fish), Houses), % member function defines any member of List
+    Houses = [house(canadian, _, _, _, _), _, _, _, _], % first Houses List member
+    member(house(spanish, red, _, _, _), Houses),
+    nextto(house(_, green, _, _, _), house(_, white, _, _, _), Houses), % nextto defines Y directly following X in List
+    member(house(scotch, _, tea, _, _), Houses),
+    neighbour(house(_, _, _, lights, _), house(_, _, _, _, cats), Houses),
+    member(house(_, yellow, _, cigar, _), Houses),
+    member(house(german, _, _, pipe, _), Houses),
+    Houses = [_, _, house(_, _, milk, _, _), _, _],
+    neighbour(house(_, _, _, lights, _), house(_, _, water, _, _), Houses),
+    member(house(_, _, _, filterless, birds), Houses),
+    member(house(french, _, _, _, dogs), Houses),
+    neighbour(house(canadian, _, _, _, _), house(_, blue, _, _, _), Houses),
+    neighbour(house(_, _, _, _, horses), house(_, yellow, _, _, _), Houses),
+    member(house(_, _, beer, menthol, _), Houses),
+    member(house(_, green, coffee, _, _), Houses).
+
+fish_owner(X) :-
+    neighbourhood(a),
+    member(house(X, _, _, _, fish), Houses).
+
+water_drinker(X) :-
+    neighbourhood(Houses),
+    member(house(X, _, water, _, _), Houses).

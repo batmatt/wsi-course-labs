@@ -4,5 +4,6 @@
         "travelling_salesman_problem",
         "optimization_algorithms",
         "deterministic_games_reversi"
-    ]
+    ],
+    "git.ignoreLimitWarning": true
 }
