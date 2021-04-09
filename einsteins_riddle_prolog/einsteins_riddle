@@ -1,13 +1,10 @@
 % helper function describing that house A is right at the left or right side of house B in the list
 neighbour(A, B, List) :- nextto(A, B, List).
-neighbour(A, B, List) :- nextto(A, B, List).
+neighbour(A, B, List) :- nextto(B, A, List).
 
 
-% house is described by properties in given order:
-house(Nationality, Color, Drink, Smoke, Animal)
-
-% basing on hints given by mr Einstein we will describe facts about members of the neighbourhood
-neighbourhood(Houses) :-
+solve_riddle(FishOwner, WaterDrinker) :-  
+    % basing on hints given by mr Einstein we will describe facts about members of the neighbourhood
     length(Houses, 5),
     member(house(_, _, _, _, fish), Houses), % member function defines any member of List
     Houses = [house(canadian, _, _, _, _), _, _, _, _], % first Houses List member
@@ -24,12 +21,8 @@ neighbourhood(Houses) :-
     neighbour(house(canadian, _, _, _, _), house(_, blue, _, _, _), Houses),
     neighbour(house(_, _, _, _, horses), house(_, yellow, _, _, _), Houses),
     member(house(_, _, beer, menthol, _), Houses),
-    member(house(_, green, coffee, _, _), Houses).
-
-fish_owner(X) :-
-    neighbourhood(a),
-    member(house(X, _, _, _, fish), Houses).
-
-water_drinker(X) :-
-    neighbourhood(Houses),
-    member(house(X, _, water, _, _), Houses).
+    member(house(_, green, coffee, _, _), Houses),
+    
+    % queries about specific members of neighbourhood
+    member(house(FishOwner, _, _, _, fish), Houses),
+  	member(house(WaterDrinker, _, water, _, _), Houses).
