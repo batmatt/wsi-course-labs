@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from pandas.core.frame import DataFrame
 
-X1 = "sepal length"
-X2 = "sepal width"
-X3 = "petal length"
-X4 = "petal width"
+X1 = "sepal length [cm]"
+X2 = "sepal width [cm]"
+X3 = "petal length [cm]"
+X4 = "petal width [cm]"
 CLASS = "class"
 
 
@@ -35,18 +35,19 @@ def plot_labels_by_two_features(
     cut_dataset = dataset[[feature1, feature2, CLASS]]
 
     groups = cut_dataset.groupby(CLASS)
-    print(groups)
 
     fig, ax = plt.subplots()
     for name, group in groups:
         ax.plot(
             group[feature1], group[feature2], marker="o", linestyle="", ms=5, label=name
         )
-    plt.xlabel(f"{feature1} [cm]")
-    plt.ylabel(f"{feature2} [cm]")
+    plt.title(f"Classification by {feature1} and {feature2}")
+    plt.xlabel(feature1)
+    plt.ylabel(feature2)
     ax.legend()
 
-    plt.show()
+    plt.savefig(f"plots/{feature1}_{feature2}.png")
+    plt.clf()
 
 
 def main():
@@ -74,7 +75,7 @@ def main():
     statistics = calculate_statistics(dataset)
 
     # uncomment to check grouping by two chosen features
-    plot_labels_by_two_features(X1, X4, dataset)
+    plot_labels_by_two_features(X1, X2, dataset)
 
 
 if __name__ == "__main__":
