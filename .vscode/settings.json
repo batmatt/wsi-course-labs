@@ -3,7 +3,8 @@
     "python.analysis.extraPaths": [
         "travelling_salesman_problem",
         "optimization_algorithms",
-        "deterministic_games_reversi"
+        "deterministic_games_reversi",
+        "gaussian_naive_bayes_classifier",
     ],
     "git.ignoreLimitWarning": true
 }
