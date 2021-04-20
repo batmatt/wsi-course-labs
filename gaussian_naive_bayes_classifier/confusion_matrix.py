@@ -48,21 +48,20 @@ class ConfusionMatrix:
                 ]
             )
 
+        self.overall_accuracy = (sum(self.tp.values()) + sum(self.tn.values())) / (
+            sum(self.tp.values())
+            + sum(self.tn.values())
+            + sum(self.fp.values())
+            + sum(self.fn.values())
+        )
+
+        self.metrics = {}
+
     def plot_confusion_matrix(self):
         sn.heatmap(self.confusion_matrix, annot=True, cmap="Blues", fmt="g")
         plt.show()
 
-    def calculate_metrics(self):
-        self.metrics = {
-            "accuracy": (sum(self.tp.values()) + sum(self.tn.values()))
-            / (
-                sum(self.tp.values())
-                + sum(self.tn.values())
-                + sum(self.fp.values())
-                + sum(self.fn.values())
-            )
-        }
-
+    def calculate_metrics_by_classes(self):
         for i in range(len(CLASSES)):
             self.metrics[CLASSES[i]] = {
                 "precision": self.tp[CLASSES[i]]
@@ -72,5 +71,3 @@ class ConfusionMatrix:
                 "fall-out": self.fp[CLASSES[i]]
                 / (self.fp[CLASSES[i]] + self.tn[CLASSES[i]]),
             }
-
-        print(self.metrics)

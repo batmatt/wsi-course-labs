@@ -10,6 +10,7 @@ import argparse
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import (
     train_test_split,
 )  # i hope it's not cheating if i use this method just to split dataset neatly
@@ -199,6 +200,26 @@ def main():
     # plot_labels_by_two_features(X1, X2, dataset)
 
     results = pd.DataFrame()
+    train_set, test_set = prepare_train_and_test_set(
+        dataset, _train_size, _sort_train_set
+    )
+
+    (
+        mean_values,
+        std_variation_values,
+        prior_probabilities,
+    ) = calculate_statistics_by_class(train_set)
+
+    results = results.append(
+        test_set_classification(
+            test_set, mean_values, std_variation_values, prior_probabilities
+        )
+    )
+
+    confusion_matrix = ConfusionMatrix(results)
+    confusion_matrix.plot_confusion_matrix()
+
+    confusion_matrices = []
     for i in range(10):
         train_set, test_set = prepare_train_and_test_set(
             dataset, _train_size, _sort_train_set
@@ -210,15 +231,26 @@ def main():
             prior_probabilities,
         ) = calculate_statistics_by_class(train_set)
 
-        results = results.append(
-            test_set_classification(
-                test_set, mean_values, std_variation_values, prior_probabilities
-            )
+        results = test_set_classification(
+            test_set, mean_values, std_variation_values, prior_probabilities
         )
 
-    confusion_matrix = ConfusionMatrix(results)
-    confusion_matrix.plot_confusion_matrix()
-    confusion_matrix.calculate_metrics()
+        cm = ConfusionMatrix(results)
+        cm.calculate_metrics_by_classes()
+        confusion_matrices.append(cm)
+
+    precision_values = {}
+    for matrix in confusion_matrices:
+        for class_name in matrix.metrics:
+            if class_name not in precision_values:
+                precision_values[class_name] = []
+            precision_values[class_name].append(matrix.metrics[class_name]["precision"])
+
+    for class_name in precision_values:
+        print(
+            f"{class_name} precision statistics after 10 runs:\nMin: {min(precision_values[class_name])}\nMax: {max(precision_values[class_name])}\n"
+            + f"Mean: {np.mean(precision_values[class_name])}\nStd deviation: {np.std(precision_values[class_name])}\n"
+        )
 
 
 if __name__ == "__main__":
