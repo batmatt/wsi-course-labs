@@ -1,3 +1,11 @@
+"""
+Demonstration of gaussian naive bayes classifier
+by
+Mateusz Winnicki
+
+Dataset source: http://archive.ics.uci.edu/ml/machine-learning-databases/
+"""
+
 import argparse
 import math
 import matplotlib.pyplot as plt
@@ -6,6 +14,8 @@ from sklearn.model_selection import (
     train_test_split,
 )  # i hope it's not cheating if i use this method just to split dataset neatly
 from pandas.core.frame import DataFrame
+
+from confusion_matrix import ConfusionMatrix
 
 X1 = "sepal length [cm]"
 X2 = "sepal width [cm]"
@@ -98,7 +108,7 @@ def test_set_classification(
     std_deviation_values: list,
     prior_probabilities: list,
 ):
-    results = pd.DataFrame(columns=["prediction", "label", "result"])
+    results = pd.DataFrame()
 
     for index, row in test_set.iterrows():
         feature_vector = row.to_list()
@@ -115,16 +125,9 @@ def test_set_classification(
             prior_probabilities,
         )
 
-        if prediction == label:
-            results = results.append(
-                {"prediction": prediction, "label": label, "result": 1},
-                ignore_index=True,
-            )
-        else:
-            results = results.append(
-                {"prediction": prediction, "label": label, "result": 0},
-                ignore_index=True,
-            )
+        results = results.append(
+            {"prediction": prediction, "actual value": label}, ignore_index=True
+        )
 
     return results
 
@@ -195,21 +198,27 @@ def main():
     # uncomment to check grouping classes by two chosen features
     # plot_labels_by_two_features(X1, X2, dataset)
 
-    train_set, test_set = prepare_train_and_test_set(
-        dataset, _train_size, _sort_train_set
-    )
+    results = pd.DataFrame()
+    for i in range(10):
+        train_set, test_set = prepare_train_and_test_set(
+            dataset, _train_size, _sort_train_set
+        )
 
-    (
-        mean_values,
-        std_variation_values,
-        prior_probabilities,
-    ) = calculate_statistics_by_class(train_set)
+        (
+            mean_values,
+            std_variation_values,
+            prior_probabilities,
+        ) = calculate_statistics_by_class(train_set)
 
-    results = test_set_classification(
-        test_set, mean_values, std_variation_values, prior_probabilities
-    )
+        results = results.append(
+            test_set_classification(
+                test_set, mean_values, std_variation_values, prior_probabilities
+            )
+        )
 
-    print(results)
+    confusion_matrix = ConfusionMatrix(results)
+    confusion_matrix.plot_confusion_matrix()
+    confusion_matrix.calculate_metrics()
 
 
 if __name__ == "__main__":
