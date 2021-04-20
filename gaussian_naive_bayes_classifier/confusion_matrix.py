@@ -48,7 +48,7 @@ class ConfusionMatrix:
                 ]
             )
 
-        self.overall_accuracy = (sum(self.tp.values()) + sum(self.tn.values())) / (
+        self.accuracy = (sum(self.tp.values()) + sum(self.tn.values())) / (
             sum(self.tp.values())
             + sum(self.tn.values())
             + sum(self.fp.values())

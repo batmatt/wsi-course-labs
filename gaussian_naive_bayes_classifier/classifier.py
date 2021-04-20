@@ -239,17 +239,30 @@ def main():
         cm.calculate_metrics_by_classes()
         confusion_matrices.append(cm)
 
+    accuracy_values = []
     precision_values = {}
+    recall_values = {}
     for matrix in confusion_matrices:
+        accuracy_values.append(matrix.accuracy)
         for class_name in matrix.metrics:
             if class_name not in precision_values:
                 precision_values[class_name] = []
+                recall_values[class_name] = []
             precision_values[class_name].append(matrix.metrics[class_name]["precision"])
+            recall_values[class_name].append(matrix.metrics[class_name]["recall"])
 
+    print(
+        f"Classifier overall accuracy statistics after 10 runs:\nMin: {min(accuracy_values)}\nMax: {max(accuracy_values)}\n"
+        + f"Mean: {np.mean(accuracy_values)}\nStd deviation: {np.std(accuracy_values)}\n"
+    )
     for class_name in precision_values:
         print(
             f"{class_name} precision statistics after 10 runs:\nMin: {min(precision_values[class_name])}\nMax: {max(precision_values[class_name])}\n"
             + f"Mean: {np.mean(precision_values[class_name])}\nStd deviation: {np.std(precision_values[class_name])}\n"
+        )
+        print(
+            f"{class_name} recall statistics after 10 runs:\nMin: {min(recall_values[class_name])}\nMax: {max(recall_values[class_name])}\n"
+            + f"Mean: {np.mean(recall_values[class_name])}\nStd deviation: {np.std(recall_values[class_name])}\n"
         )
 
 
