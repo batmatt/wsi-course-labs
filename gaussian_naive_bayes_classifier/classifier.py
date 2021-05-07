@@ -165,6 +165,17 @@ def prepare_train_and_test_set(
     return train_set, test_set
 
 
+def get_test_set_classes(test_set: DataFrame):
+    classes = {}
+    i = 0
+    for index in test_set.index:
+        if test_set["class"][index] not in classes.values():
+            classes[i] = test_set["class"][index]
+            i = i + 1
+
+    return classes
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -204,6 +215,8 @@ def main():
         dataset, _train_size, _sort_train_set
     )
 
+    classes = get_test_set_classes(test_set)
+
     (
         mean_values,
         std_variation_values,
@@ -216,7 +229,7 @@ def main():
         )
     )
 
-    confusion_matrix = ConfusionMatrix(results)
+    confusion_matrix = ConfusionMatrix(results, classes)
     confusion_matrix.plot_confusion_matrix()
 
     confusion_matrices = []
@@ -224,6 +237,8 @@ def main():
         train_set, test_set = prepare_train_and_test_set(
             dataset, _train_size, _sort_train_set
         )
+
+        classes = get_test_set_classes(test_set)
 
         (
             mean_values,
@@ -235,7 +250,7 @@ def main():
             test_set, mean_values, std_variation_values, prior_probabilities
         )
 
-        cm = ConfusionMatrix(results)
+        cm = ConfusionMatrix(results, classes)
         cm.calculate_metrics_by_classes()
         confusion_matrices.append(cm)
 

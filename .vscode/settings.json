@@ -5,6 +5,7 @@
         "optimization_algorithms",
         "deterministic_games_reversi",
         "gaussian_naive_bayes_classifier",
+        "random_forest"
     ],
     "git.ignoreLimitWarning": true
 }
