@@ -11,14 +11,13 @@ from typing import List
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from scipy.sparse import data
-import seaborn as sn
+import random
 from sklearn.model_selection import (
     train_test_split,
 )  # i hope it's not cheating if i use this method just to split dataset neatly
 from pandas.core.frame import DataFrame
 
-from confusion_matrix import ConfusionMatrix
+from random_forest_confusion_matrix import ConfusionMatrix
 
 X1 = "buying"
 X2 = "maint"
@@ -52,8 +51,11 @@ def get_dataset_classes(dataset: DataFrame):
     return classes
 
 
-def evaluate_wiht_cross_validation(train_set: DataFrame, folds_number: int):
+def evaluate_with_cross_validation(
+    train_set: DataFrame, folds_number: int, trees_number: int, max_depth: int
+):
     split = np.array_split(train_set, folds_number)
+    confusion_matrices = []
 
     for i in range(folds_number):
         train_set_parts = split.copy()
@@ -61,6 +63,61 @@ def evaluate_wiht_cross_validation(train_set: DataFrame, folds_number: int):
 
         train_set = pd.concat(train_set_parts, sort=False)
         test_set = split[i]
+
+        classes = get_dataset_classes(train_set)
+        results = random_forest_classification(
+            train_set, test_set, trees_number, max_depth
+        )
+
+        cm = ConfusionMatrix(results, classes)
+        cm.calculate_metrics_by_classes()
+        confusion_matrices.append(cm)
+
+    accuracy_values = []
+    precision_values = {}
+    recall_values = {}
+    for matrix in confusion_matrices:
+        accuracy_values.append(matrix.accuracy)
+        for class_name in matrix.metrics:
+            if class_name not in precision_values:
+                precision_values[class_name] = []
+                recall_values[class_name] = []
+            precision_values[class_name].append(matrix.metrics[class_name]["precision"])
+            recall_values[class_name].append(matrix.metrics[class_name]["recall"])
+
+    print(
+        f"Classifier mean overall accuracy after cross_validation:\nMin: {min(accuracy_values)}\nMax: {max(accuracy_values)}\n"
+        + f"Mean: {np.mean(accuracy_values)}\nStd deviation: {np.std(accuracy_values)}\n"
+    )
+    for class_name in precision_values:
+        print(
+            f"Mean {class_name} precision statistics after cross_validation:\nMin: {min(precision_values[class_name])}\nMax: {max(precision_values[class_name])}\n"
+            + f"Mean: {np.mean(precision_values[class_name])}\nStd deviation: {np.std(precision_values[class_name])}\n"
+        )
+        print(
+            f"Mean {class_name} recall statistics after cross_validation:\nMin: {min(recall_values[class_name])}\nMax: {max(recall_values[class_name])}\n"
+            + f"Mean: {np.mean(recall_values[class_name])}\nStd deviation: {np.std(recall_values[class_name])}\n"
+        )
+
+
+def random_forest_classification(
+    train_set: DataFrame, test_set: DataFrame, trees_number: int, max_depth: int
+):
+    trees = []
+    for i in range(trees_number):
+        tree = build_decision_tree(train_set, max_depth)
+        trees.append(tree)
+
+    results = pd.DataFrame()
+    for _, row in test_set.iterrows():
+        prediction = make_forest_prediction(row, trees)
+
+        results = results.append(
+            {"prediction": prediction, "actual value": row[CLASS]},
+            ignore_index=True,
+        )
+
+    return results
 
 
 def test_split(dataset: DataFrame, feature: str, value: str):
@@ -71,20 +128,24 @@ def test_split(dataset: DataFrame, feature: str, value: str):
 
 
 def calculate_gini_index(left: DataFrame, right: DataFrame, class_values: list):
-    gini_index = 0
+    gini_index = 0.0
     branches = [left, right]
+    dataset_size = len(left.index) + len(right.index)
+    classes = list(set(class_values))
 
-    for class_value in class_values:
-        for branch in branches:
-            branch_size = len(branch.index)
-            if branch_size == 0:
-                continue
-
-            class_value_occurances = branch.loc[
+    for branch in branches:
+        branch_size = len(branch.index)
+        if branch_size == 0:
+            continue
+        score = 0.0
+        for class_value in classes:
+            class_value_occurrences = branch.loc[
                 branch[CLASS] == class_value, CLASS
             ].count()
-            proportion = class_value_occurances / branch_size
-            gini_index += proportion * (1 - proportion)
+            proportion = class_value_occurrences / branch_size
+            score += proportion * proportion
+
+        gini_index += (1.0 - score) * (branch_size / dataset_size)
 
     return gini_index
 
@@ -97,13 +158,14 @@ def get_best_split(dataset: DataFrame):
     best_left = ""
     best_right = ""
 
-    for feature in FEATURES:
+    random_features = random.sample(FEATURES, 2)
+
+    for feature in random_features:
         values = list(dict.fromkeys(dataset[feature].tolist()))
 
         for value in values:
             left, right = test_split(dataset, feature, value)
             gini_index = calculate_gini_index(left, right, class_values)
-            print(f"gini: {gini_index}, feature: {feature}, value: {value}")
 
             if gini_index < previous_best_gini_index:
                 previous_best_gini_index = gini_index
@@ -121,15 +183,76 @@ def get_best_split(dataset: DataFrame):
     return best_split
 
 
-def split_on_node(node: dict, max_depth: int, current_depth: int):
+def terminal_node(branch: DataFrame):
+    labels = [row[CLASS] for _, row in branch.iterrows()]
+    return max(set(labels), key=labels.count)
+
+
+def split_on_node(node: dict, max_depth: int, current_depth: int = 1):
     left, right = node["left"], node["right"]
     del node["left"]
     del node["right"]
-    pass
+
+    # if tree has only right branches go stright to terminal node on the right
+    if len(left.index) == 0:
+        node["left"] = node["right"] = terminal_node(right)
+        return
+
+    # if tree has only left branches go stright to terminal node on the left
+    if len(right.index) == 0:
+        node["left"] = node["right"] = terminal_node(left)
+        return
+
+    # if depth is equal maximum depth given by user, make nodes terminal
+    if current_depth >= max_depth:
+        node["left"], node["right"] = terminal_node(left), terminal_node(right)
+        return
+
+    # tree grows non terminal node on the left
+    node["left"] = get_best_split(left)
+    split_on_node(node["left"], max_depth, current_depth + 1)
+
+    # tree grows non terminal node on the right
+    node["right"] = get_best_split(right)
+    split_on_node(node["right"], max_depth, current_depth + 1)
 
 
 def build_decision_tree(train_set: DataFrame, max_depth: int):
     tree_root = get_best_split(train_set)
+    split_on_node(tree_root, max_depth)
+
+    return tree_root
+
+
+def print_tree(node: dict, depth: int = 0, side: str = "  "):
+    # if current node is a dictionary it means it isn't terminal node yet
+    if isinstance(node, dict):
+        print(f"{depth * 2 * ' '}{side}{node['feature']} == {node['value']}")
+        print_tree(node["left"], depth + 1, "L ")
+        print_tree(node["right"], depth + 1, "R ")
+    else:
+        print(f"{depth * 2 * ' '}{side}[{node}]")
+
+
+def make_prediction(feature_vector: list, node: dict):
+    if str(feature_vector[node["feature"]]) != node["value"]:
+        if isinstance(node["left"], dict):
+            return make_prediction(feature_vector, node["left"])
+        else:
+            return node["left"]
+    else:
+        if isinstance(node["right"], dict):
+            return make_prediction(feature_vector, node["right"])
+        else:
+            return node["right"]
+
+
+def make_forest_prediction(feature_vector: list, forest: list):
+    predictions = []
+    for tree in forest:
+        predictions.append(make_prediction(feature_vector, tree))
+
+    return max(set(predictions), key=predictions.count)
 
 
 def plot_features_histograms(dataset: DataFrame):
@@ -307,11 +430,39 @@ def main():
         plot_features_histograms(dataset)
 
     train_set, validation_set = train_test_split(dataset, train_size=_train_size)
+    classes = get_dataset_classes(train_set)
 
-    evaluate_wiht_cross_validation(train_set, _folds_number)
+    # first evaluation with cross validation
+    evaluate_with_cross_validation(train_set, _folds_number, _trees_number, _max_depth)
 
-    best_split = get_best_split(train_set)
-    print(best_split)
+    # second evaluation with train and validation set
+    results = random_forest_classification(
+        train_set, validation_set, _trees_number, _max_depth
+    )
+
+    cm = ConfusionMatrix(results, classes)
+    cm.calculate_metrics_by_classes()
+    cm.plot_confusion_matrix()
+
+    accuracy = cm.accuracy
+    precision_values = {}
+    recall_values = {}
+
+    for class_name in cm.metrics:
+        if class_name not in precision_values:
+            precision_values[class_name] = []
+            recall_values[class_name] = []
+        precision_values[class_name].append(cm.metrics[class_name]["precision"])
+        recall_values[class_name].append(cm.metrics[class_name]["recall"])
+
+    print(f"Classifier accuracy after evaluation on validation set: {accuracy}")
+    for class_name in precision_values:
+        print(
+            f"{class_name} precision after evaluation on validation set: {precision_values[class_name]}"
+        )
+        print(
+            f"{class_name} recall after evaluation on validation set: {recall_values[class_name]}"
+        )
 
 
 if __name__ == "__main__":

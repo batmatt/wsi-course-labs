@@ -17,6 +17,18 @@ class ConfusionMatrix:
             colnames=["Predicted"],
         )
 
+        # fill confusion matrix with empty predicted columns if there are missing
+        for value in results["actual value"].unique():
+            if value not in results["prediction"].unique():
+                predicted = [0, 0, 0, 0]
+                self.confusion_matrix[value] = predicted
+
+        # row names are sorted, so to make crosstab work properly, we need to rearrange columns too
+        sorted_columns = self.confusion_matrix.columns.sort_values()
+        self.confusion_matrix = self.confusion_matrix.reindex(
+            sorted_columns, axis="columns"
+        )
+
         self.tp = {}
         self.tn = {}
         self.fp = {}
@@ -64,11 +76,22 @@ class ConfusionMatrix:
 
     def calculate_metrics_by_classes(self):
         for i in range(len(self.classes)):
-            self.metrics[self.classes[i]] = {
-                "precision": self.tp[self.classes[i]]
-                / (self.tp[self.classes[i]] + self.fp[self.classes[i]]),
-                "recall": self.tp[self.classes[i]]
-                / (self.tp[self.classes[i]] + self.fn[self.classes[i]]),
-                "fall-out": self.fp[self.classes[i]]
-                / (self.fp[self.classes[i]] + self.tn[self.classes[i]]),
-            }
+            precision_denominator = self.tp[self.classes[i]] + self.fp[self.classes[i]]
+
+            if precision_denominator != 0:
+                self.metrics[self.classes[i]] = {
+                    "precision": self.tp[self.classes[i]]
+                    / (self.tp[self.classes[i]] + self.fp[self.classes[i]]),
+                    "recall": self.tp[self.classes[i]]
+                    / (self.tp[self.classes[i]] + self.fn[self.classes[i]]),
+                    "fall-out": self.fp[self.classes[i]]
+                    / (self.fp[self.classes[i]] + self.tn[self.classes[i]]),
+                }
+            else:
+                self.metrics[self.classes[i]] = {
+                    "precision": 0.0,
+                    "recall": self.tp[self.classes[i]]
+                    / (self.tp[self.classes[i]] + self.fn[self.classes[i]]),
+                    "fall-out": self.fp[self.classes[i]]
+                    / (self.fp[self.classes[i]] + self.tn[self.classes[i]]),
+                }
